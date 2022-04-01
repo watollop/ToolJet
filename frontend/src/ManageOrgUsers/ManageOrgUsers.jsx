@@ -1,4 +1,5 @@
 import React from 'react';
+import cx from 'classnames';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { Header } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -20,6 +21,7 @@ class ManageOrgUsers extends React.Component {
       unarchivingUser: null,
       fields: {},
       errors: {},
+      currentTab: 'active',
     };
 
     this.tableRef = React.createRef(null);
@@ -182,7 +184,7 @@ class ManageOrgUsers extends React.Component {
   };
 
   render() {
-    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser } = this.state;
+    const { isLoading, showNewUserForm, creatingUser, users, archivingUser, unarchivingUser, currentTab } = this.state;
     return (
       <div className="wrapper org-users-page">
         <Header switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode} />
@@ -286,124 +288,249 @@ class ManageOrgUsers extends React.Component {
 
             {!showNewUserForm && (
               <div className="container-xl">
-                <div className="card">
-                  <div
-                    className="card-table fixedHeader table-responsive table-bordered"
-                    ref={this.tableRef}
-                    style={{ maxHeight: this.tableRef.current && this.calculateOffset() }}
+               
+                    <div class="card">
+                    <nav className="nav nav-tabs">
+                  <a
+                    onClick={() => this.setState({ currentTab: 'active' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'active' })}
                   >
-                    <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Status</th>
-                          <th className="w-1"></th>
-                        </tr>
-                      </thead>
-                      {isLoading ? (
-                        <tbody className="w-100" style={{ minHeight: '300px' }}>
-                          {Array.from(Array(4)).map((_item, index) => (
-                            <tr key={index}>
-                              <td className="col-2 p-3">
-                                <div className="row">
-                                  <div
-                                    className="skeleton-image col-auto"
-                                    style={{ width: '25px', height: '25px' }}
-                                  ></div>
-                                  <div className="skeleton-line w-10 col mx-3"></div>
-                                </div>
-                              </td>
-                              <td className="col-4 p-3">
-                                <div className="skeleton-line w-10"></div>
-                              </td>
-                              <td className="col-2 p-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                              <td className="text-muted col-auto col-1 pt-3">
-                                <div className="skeleton-line"></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      ) : (
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>
-                                <span className="avatar bg-azure-lt avatar-sm">
-                                  {user.first_name ? user.first_name[0] : ''}
-                                  {user.last_name ? user.last_name[0] : ''}
-                                </span>
-                                <span
-                                  className="mx-3"
-                                  style={{
-                                    display: 'inline-flex',
-                                    marginBottom: '7px',
-                                  }}
-                                >
-                                  {user.name}
-                                </span>
-                              </td>
-                              <td className="text-muted">
-                                <a className="text-reset user-email">{user.email}</a>
-                              </td>
-                              <td className="text-muted">
-                                <span
-                                  className={`badge bg-${
-                                    user.status === 'invited'
-                                      ? 'warning'
-                                      : user.status === 'archived'
-                                      ? 'danger'
-                                      : 'success'
-                                  } me-1 m-1`}
-                                ></span>
-                                <small className="user-status">{user.status}</small>
-                                {user.status === 'invited' && 'invitation_token' in user ? (
-                                  <CopyToClipboard
-                                    text={this.generateInvitationURL(user)}
-                                    onCopy={this.invitationLinkCopyHandler}
-                                  >
-                                    <img
-                                      data-tip="Copy invitation link"
-                                      className="svg-icon"
-                                      src="/assets/images/icons/copy.svg"
-                                      width="15"
-                                      height="15"
-                                      style={{
-                                        cursor: 'pointer',
-                                      }}
-                                    ></img>
-                                  </CopyToClipboard>
-                                ) : (
-                                  ''
-                                )}
-                              </td>
-                              <td>
-                                <a
-                                  onClick={() => {
-                                    user.status === 'archived'
-                                      ? this.unarchiveOrgUser(user.id)
-                                      : this.archiveOrgUser(user.id);
-                                  }}
-                                >
-                                  {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+                    Active
+                  </a>
+                  <a
+                    onClick={() => this.setState({ currentTab: 'archived' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'archived' })}
+                  >
+                    Archived
+                  </a>
+                </nav>
+                      <div class="card-body">
+                        <div class="tab-content">
+                          <div className={`tab-pane ${currentTab === 'active' ? 'active show' : ''}`}>
+                            <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+                              <thead>
+                                <tr>
+                                  <th>Name</th>
+                                  <th>Email</th>
+                                  <th>Status</th>
+                                  <th className="w-1"></th>
+                                </tr>
+                              </thead>
+                              {isLoading ? (
+                                <tbody className="w-100" style={{ minHeight: '300px' }}>
+                                  {Array.from(Array(4)).map((_item, index) => (
+                                    <tr key={index}>
+                                      <td className="col-2 p-3">
+                                        <div className="row">
+                                          <div
+                                            className="skeleton-image col-auto"
+                                            style={{ width: '25px', height: '25px' }}
+                                          ></div>
+                                          <div className="skeleton-line w-10 col mx-3"></div>
+                                        </div>
+                                      </td>
+                                      <td className="col-4 p-3">
+                                        <div className="skeleton-line w-10"></div>
+                                      </td>
+                                      <td className="col-2 p-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                      <td className="text-muted col-auto col-1 pt-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                      <td className="text-muted col-auto col-1 pt-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              ) : (
+                                <tbody>
+                                  {users.filter((user) => user.status != 'archived').map((user) => (
+                                    <tr key={user.id}>
+                                      <td>
+                                        <span className="avatar bg-azure-lt avatar-sm">
+                                          {user.first_name ? user.first_name[0] : ''}
+                                          {user.last_name ? user.last_name[0] : ''}
+                                        </span>
+                                        <span
+                                          className="mx-3"
+                                          style={{
+                                            display: 'inline-flex',
+                                            marginBottom: '7px',
+                                          }}
+                                        >
+                                          {user.name}
+                                        </span>
+                                      </td>
+                                      <td className="text-muted">
+                                        <a className="text-reset user-email">{user.email}</a>
+                                      </td>
+                                      <td className="text-muted">
+                                        <span
+                                          className={`badge bg-${user.status === 'invited'
+                                              ? 'warning'
+                                              : user.status === 'archived'
+                                                ? 'danger'
+                                                : 'success'
+                                            } me-1 m-1`}
+                                        ></span>
+                                        <small className="user-status">{user.status}</small>
+                                        {user.status === 'invited' && 'invitation_token' in user ? (
+                                          <CopyToClipboard
+                                            text={this.generateInvitationURL(user)}
+                                            onCopy={this.invitationLinkCopyHandler}
+                                          >
+                                            <img
+                                              data-tip="Copy invitation link"
+                                              className="svg-icon"
+                                              src="/assets/images/icons/copy.svg"
+                                              width="15"
+                                              height="15"
+                                              style={{
+                                                cursor: 'pointer',
+                                              }}
+                                            ></img>
+                                          </CopyToClipboard>
+                                        ) : (
+                                          ''
+                                        )}
+                                      </td>
+                                      <td>
+                                        <a
+                                          onClick={() => {
+                                            user.status === 'archived'
+                                              ? this.unarchiveOrgUser(user.id)
+                                              : this.archiveOrgUser(user.id);
+                                          }}
+                                        >
+                                          {user.status === 'archived' ? 'Unarchive' : 'Archive'}
 
-                                  {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      )}
-                    </table>
+                                          {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              )}
+                            </table>
+                          </div>
+                          <div className={`tab-pane ${currentTab === 'archived' ? 'active show' : ''}`}>
+                            <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+                              <thead>
+                                <tr>
+                                  <th>Name</th>
+                                  <th>Email</th>
+                                  <th>Status</th>
+                                  <th className="w-1"></th>
+                                </tr>
+                              </thead>
+                              {isLoading ? (
+                                <tbody className="w-100" style={{ minHeight: '300px' }}>
+                                  {Array.from(Array(4)).map((_item, index) => (
+                                    <tr key={index}>
+                                      <td className="col-2 p-3">
+                                        <div className="row">
+                                          <div
+                                            className="skeleton-image col-auto"
+                                            style={{ width: '25px', height: '25px' }}
+                                          ></div>
+                                          <div className="skeleton-line w-10 col mx-3"></div>
+                                        </div>
+                                      </td>
+                                      <td className="col-4 p-3">
+                                        <div className="skeleton-line w-10"></div>
+                                      </td>
+                                      <td className="col-2 p-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                      <td className="text-muted col-auto col-1 pt-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                      <td className="text-muted col-auto col-1 pt-3">
+                                        <div className="skeleton-line"></div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              ) : (
+                                <tbody>
+                                  {users.filter((user) => user.status == 'archived').map((user) => (
+                                    <tr key={user.id}>
+                                      <td>
+                                        <span className="avatar bg-azure-lt avatar-sm">
+                                          {user.first_name ? user.first_name[0] : ''}
+                                          {user.last_name ? user.last_name[0] : ''}
+                                        </span>
+                                        <span
+                                          className="mx-3"
+                                          style={{
+                                            display: 'inline-flex',
+                                            marginBottom: '7px',
+                                          }}
+                                        >
+                                          {user.name}
+                                        </span>
+                                      </td>
+                                      <td className="text-muted">
+                                        <a className="text-reset user-email">{user.email}</a>
+                                      </td>
+                                      <td className="text-muted">
+                                        <span
+                                          className={`badge bg-${user.status === 'invited'
+                                              ? 'warning'
+                                              : user.status === 'archived'
+                                                ? 'danger'
+                                                : 'success'
+                                            } me-1 m-1`}
+                                        ></span>
+                                        <small className="user-status">{user.status}</small>
+                                        {user.status === 'invited' && 'invitation_token' in user ? (
+                                          <CopyToClipboard
+                                            text={this.generateInvitationURL(user)}
+                                            onCopy={this.invitationLinkCopyHandler}
+                                          >
+                                            <img
+                                              data-tip="Copy invitation link"
+                                              className="svg-icon"
+                                              src="/assets/images/icons/copy.svg"
+                                              width="15"
+                                              height="15"
+                                              style={{
+                                                cursor: 'pointer',
+                                              }}
+                                            ></img>
+                                          </CopyToClipboard>
+                                        ) : (
+                                          ''
+                                        )}
+                                      </td>
+                                      <td>
+                                        <a
+                                          onClick={() => {
+                                            user.status === 'archived'
+                                              ? this.unarchiveOrgUser(user.id)
+                                              : this.archiveOrgUser(user.id);
+                                          }}
+                                        >
+                                          {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+
+                                          {unarchivingUser === user.id || archivingUser === user.id ? '...' : ''}
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              )}
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+             
             )}
+            
           </div>
         </div>
       </div>
