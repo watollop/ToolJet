@@ -10,7 +10,7 @@ import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { componentTypes } from '../Editor/Components/components';
+import { componentTypes } from '@/Editor/Components/components';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { allSvgs } from '@tooljet/plugins/client';
@@ -271,9 +271,14 @@ function executeAction(_ref, event, mode, customVariables) {
         const data = resolveReferences(event.data, _ref.state.currentState, undefined, customVariables) ?? [];
         const fileName =
           resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
+        const fileType =
+          resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
 
-        const csv = generateCSV(data);
-        generateFile(fileName, csv);
+        const fileData = {
+          csv: generateCSV,
+          plaintext: (plaintext) => plaintext,
+        }[fileType](data);
+        generateFile(fileName, fileData);
         return Promise.resolve();
       }
 
@@ -285,26 +290,26 @@ function executeAction(_ref, event, mode, customVariables) {
       case 'set-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
-        const customVariables = { ..._ref.state.currentState.variables };
-        customVariables[key] = value;
+        const customAppVariables = { ..._ref.state.currentState.variables };
+        customAppVariables[key] = value;
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customVariables,
+            variables: customAppVariables,
           },
         });
       }
 
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const customVariables = { ..._ref.state.currentState.variables };
-        delete customVariables[key];
+        const customAppVariables = { ..._ref.state.currentState.variables };
+        delete customAppVariables[key];
 
         return _ref.setState({
           currentState: {
             ..._ref.state.currentState,
-            variables: customVariables,
+            variables: customAppVariables,
           },
         });
       }
